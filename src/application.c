@@ -193,11 +193,11 @@ void climate_module_event_handler(twr_module_climate_event_t event, void *event_
 
             float y_val = ((ai_float *)aiTemperatureOutData)[0];
 
-            twr_log_debug("APP: y_val_temperature: %f", y_val);
+            twr_log_debug("APP: predicted temperature: %f", y_val);
 
             lastTemperature = celsius;
 
-            twr_log_debug("APP: temperature: %.2f °C", celsius);
+            twr_log_debug("APP: temperature: %.2f", celsius);
         }
     }
     else if (event == TWR_MODULE_CLIMATE_EVENT_UPDATE_HYGROMETER)
@@ -222,7 +222,7 @@ void climate_module_event_handler(twr_module_climate_event_t event, void *event_
 
             float y_val = ((ai_float *)aiHumidityOutData)[0];
 
-            twr_log_debug("APP: y_val_humidity: %f", y_val);
+            twr_log_debug("APP: predicted humidity: %f", y_val);
 
             lastHumidity = humidity;
 
