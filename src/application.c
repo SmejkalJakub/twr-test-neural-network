@@ -143,32 +143,6 @@ void button_event_handler(twr_button_t *self, twr_button_event_t event, void *ev
     }
 }
 
-void tmp112_event_handler(twr_tmp112_t *self, twr_tmp112_event_t event, void *event_param)
-{
-    if (event == TWR_TMP112_EVENT_UPDATE)
-    {
-        for (uint32_t i = 0; i < AI_NETWORK_TEMPERATURE_IN_1_SIZE; i++)
-        {
-            ((ai_float *)aiTemperatureInData)[i] = (ai_float)lastTemperature;
-        }
-
-        AI_Temperature_Run(aiTemperatureInData, aiTemperatureOutData);
-
-        float y_val = ((ai_float *)aiTemperatureOutData)[0];
-
-        twr_log_debug("APP: y_val: %f", y_val);
-
-        float celsius;
-        // Read temperature
-        twr_tmp112_get_temperature_celsius(self, &celsius);
-        lastTemperature = celsius;
-
-        twr_log_debug("APP: temperature: %.2f °C", celsius);
-
-        twr_radio_pub_temperature(TWR_RADIO_PUB_CHANNEL_R1_I2C0_ADDRESS_ALTERNATE, &celsius);
-    }
-}
-
 void climate_module_event_handler(twr_module_climate_event_t event, void *event_param)
 {
     if (event == TWR_MODULE_CLIMATE_EVENT_UPDATE_THERMOMETER)
@@ -193,11 +167,18 @@ void climate_module_event_handler(twr_module_climate_event_t event, void *event_
 
             float y_val = ((ai_float *)aiTemperatureOutData)[0];
 
+            twr_log_debug("------------------------");
             twr_log_debug("APP: predicted temperature: %f", y_val);
 
             lastTemperature = celsius;
 
             twr_log_debug("APP: temperature: %.2f", celsius);
+            twr_log_debug("------------------------");
+
+            char buffer[80];
+            sprintf(buffer, "{\\\"predicted\\\": %.2f, \\\"actual\\\": %.2f}", y_val, celsius);
+            twr_radio_pub_string("temperature", buffer);
+
         }
     }
     else if (event == TWR_MODULE_CLIMATE_EVENT_UPDATE_HYGROMETER)
@@ -222,11 +203,18 @@ void climate_module_event_handler(twr_module_climate_event_t event, void *event_
 
             float y_val = ((ai_float *)aiHumidityOutData)[0];
 
+            twr_log_debug("------------------------");
             twr_log_debug("APP: predicted humidity: %f", y_val);
 
             lastHumidity = humidity;
 
             twr_log_debug("APP: humidity: %.2f", humidity);
+            twr_log_debug("------------------------");
+
+            // Create json string with predicted humidity and actual humidity
+            char buffer[80];
+            sprintf(buffer, "{\\\"predicted\\\": %.2f, \\\"actual\\\": %.2f}", y_val, humidity);
+            twr_radio_pub_string("humidity", buffer);
         }
     }
 }
